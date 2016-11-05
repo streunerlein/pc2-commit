@@ -16,7 +16,7 @@ module.exports = {
   nodes: {
     'node0': {
       id: 'node0',
-      host: '128.199.162.96',
+      host: '45.55.65.163',
       debug: {
         port: 8010
       },
@@ -24,7 +24,7 @@ module.exports = {
     },
     'node1': {
       id: 'node1',
-      host: '45.55.65.163',
+      host: '128.199.162.96',
       debug: {
         port: 8011
       },
