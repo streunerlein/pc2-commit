@@ -2,3 +2,4 @@
 *.db
 *.pcdb
 node_modules/
+push-production.sh
