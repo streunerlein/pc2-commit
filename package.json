@@ -9,8 +9,10 @@
   "author": "dominique sandoz",
   "license": "ISC",
   "dependencies": {
+    "always-tail": "^0.2.0",
     "async": "^2.1.2",
     "express": "^4.14.0",
+    "fs-extra": "*",
     "machina": "^2.0.0",
     "node-watch": "^0.4.1",
     "pug": "^2.0.0-beta6",
@@ -19,8 +21,7 @@
     "stately.js": "^1.3.0",
     "underscore": "^1.8.3",
     "util": "^0.10.3",
-    "uuid": "^2.0.3",
-    "fs-extra": "*"
+    "uuid": "^2.0.3"
   },
   "devDependencies": {
     "chai": "^3.5.0",
