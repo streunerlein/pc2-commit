@@ -1,30 +1,34 @@
 
 module.exports = {
   supervisor: {
-    host: 'localhost',
-    port: 9000
+    host: '46.101.241.144',
+    port: 9000,
+    geo: 'Frankfurt'
   },
   coordinator: {
     id: 'coordinator',
-    host: 'localhost',
+    host: '46.101.241.144',
     debug: {
       port: 8001
-    }
+    },
+    geo: 'Frankfurt'
   },
   nodes: {
     'node0': {
       id: 'node0',
-      host: 'localhost',
+      host: '128.199.162.96',
       debug: {
         port: 8010
-      }
+      },
+      geo: 'New York City'
     },
     'node1': {
       id: 'node1',
-      host: 'localhost',
+      host: '45.55.65.163',
       debug: {
         port: 8011
-      }
+      },
+      geo: 'Singapur'
     }
   }
 };
