@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Monitor</title>
+
+  </head>
+  <body>
+    <h1>Monitor</h1>
+    <div id="state"></div>
+    <div id="log"></div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      var socket = io();
+
+      socket.on('transition', function(state) {
+        document.querySelector('#state').innerHTML +=
+          state.fromState + ' - [' + state.action + '] &gt; ' + state.toState + "<br />";
+      });
+
+      socket.on('fileupdate', function(file) {
+        document.querySelector('#log').innerHTML +=
+          file.id + ': ' + file.line + "<br />";
+      });
+    </script>
+  </body>
+</html>

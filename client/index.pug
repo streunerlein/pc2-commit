@@ -1,0 +1,169 @@
+html
+  head
+    title Client
+    link(rel="stylesheet", href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css")
+    style(type='text/css').
+      .log {
+        font-size:80%;
+      }
+      .log td {
+        white-space:nowrap;
+      }
+      body {
+        display:flex;
+        flex-flow:column;
+      }
+      .navbar.top {
+        margin-bottom:0;
+      }
+      .main {
+        flex: 2;
+        overflow: auto;
+        display:flex;
+      }
+      .col {
+        display:flex;
+        flex-flow:column;
+      }
+      .col > div {
+        flex-grow:1;
+        display:flex;
+      }
+      .panel {
+        flex-grow:1;
+        margin:15px;
+        display:flex;
+        flex-flow:column;
+      }
+      .panel-body {
+        flex: 2;
+        overflow:auto;
+      }
+
+      .panel-body .table {
+        table-layout:fixed;
+      }
+  body
+    .nav.navbar.top
+      a.navbar-brand(href="#") 2-Phase-Commit Client
+    .main
+      .client.col
+        .item
+          .panel.panel-default
+            .panel-heading
+              h3.panel-title Client
+            .panel-body
+              textarea#query
+                | node0 ADD 100
+                | node1 SUBTRACT 100
+              button#execute Execute
+            .panel-footer
+      .coordinators.col
+      .comms.col
+        .item
+          .panel.panel-default
+            .panel-heading
+              h3.panel-title Client
+            .panel-body
+              textarea#query
+                | node0 ADD 100
+                | node1 SUBTRACT 100
+              button#execute Execute
+            .panel-footer
+        .item
+          .panel.panel-default
+            .panel-heading
+              h3.panel-title Client
+            .panel-body
+              textarea#query
+                | node0 ADD 100
+                | node1 SUBTRACT 100
+              button#execute Execute
+            .panel-footer
+      .nodes.col
+
+    script(src='http://underscorejs.org/underscore-min.js')
+    script(src="https://code.jquery.com/jquery-3.1.1.min.js")
+    script(src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js")
+    script(src="http://backbonejs.org/backbone-min.js")
+    script(src='/socket.io/socket.io.js')
+    script(src='/js/NodeModel.js')
+    script(src='/js/NodePanel.js')
+    script.
+      var socket = io();
+      var config = !{JSON.stringify(config)};
+
+      _.each(config.nodes, function(node, nodename) {
+        var model = new NodeModel(node);
+        var panel = new NodePanel({
+          el: $('<div class="item"></div>'),
+          model: model
+        });
+
+        node.model = model;
+
+        panel.render();
+        $('.nodes').append(panel.$el);
+      });
+
+      var coordinator = new NodeModel(config.coordinator);
+      var cPanel = new NodePanel({
+        el: $('<div class="item"></div>'),
+        model: coordinator,
+        className: 'coordinator'
+      });
+
+      config.coordinator.model = coordinator;
+
+      cPanel.render();
+      $('.coordinators').append(cPanel.$el);
+
+
+      socket.on('connect', function() {
+        socket.emit('identify', 'client');
+      });
+
+      socket.on('PREPARE',      function(data) { console.log(data); });
+      socket.on('YES VOTE',     function(data) { console.log(data); });
+      socket.on('NO VOTE',      function(data) { console.log(data); });
+      socket.on('ACK',      function(data) { console.log(data); });
+      socket.on('COMMIT',      function(data) { console.log(data); });
+      socket.on('ABORT',      function(data) { console.log(data); });
+
+      document.querySelector('#execute').addEventListener('click', function() {
+        socket.emit('query', parseQuery(document.querySelector('#query').value));
+      });
+
+      function parseQuery(queryStr) {
+        var lines = queryStr.split("\n").filter(function(l) { return l.length; });
+
+        lines.forEach(validateQuery);
+        queries = lines.map(function(line) { return line.split(" "); });
+        return queries;
+      }
+
+      function validateQuery(line) {
+        var parts = line.split(" ");
+        var validQueries = [
+          [isNode, equals('ADD'), isInteger],
+          [isNode, equals('SUBTRACT'), isInteger],
+          [isNode, equals('SET'), isInteger],
+          [isNode, equals('GET')],
+        ].filter(function(qS) { 
+          return qS.length === parts.length;
+        });
+
+        var match = validQueries.find(function(qS) {
+          return parts.every(function(val, ix) {
+            return qS[ix](val);
+          });
+        });
+
+        if (typeof match == 'undefined') {
+          throw 'Invalid syntax';
+        }
+
+        function isInteger(str) { return (parseInt(str, 10) == str); }
+        function isNode(str) { return Object.keys(config.nodes).indexOf(str) !== -1;}
+        function equals(compareStr) { return function(str) { return compareStr === str; } }
+      }
