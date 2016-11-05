@@ -3,7 +3,7 @@
 var _ = require('underscore');
 var machina = require('machina');
 
-var DEFAULT_RETRY_TIMEOUT = 10000;
+var DEFAULT_RETRY_TIMEOUT = 30000;
 
 var node = machina.Fsm.extend({
   initialState: 'STATE_INIT',

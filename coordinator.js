@@ -3,8 +3,8 @@
 var _ = require('underscore');
 var machina = require('machina');
 
-var DEFAULT_VOTE_TIMEOUT = 10000;
-var DEFAULT_ACK_TIMEOUT = 10000;
+var DEFAULT_VOTE_TIMEOUT = 30000;
+var DEFAULT_ACK_TIMEOUT = 30000;
 
 var coordinator = machina.Fsm.extend({
   initialState: 'STATE_INIT',

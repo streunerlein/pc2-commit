@@ -19,21 +19,37 @@ var coordinator = null;
 var nodes = {};
 var clients = {};
 
-var delay = 1000;
-
 var coordinatorId = config.coordinator.id;
 var nodesConfig = config.nodes;
 
 io.sockets.on("connection", function (socket) {
 
   socket.on('query', function(queries) {
-    coordinator.emit('transaction', {
+    var msg = {
+      type: 'transaction',
+      to: 'coordinator',
       from: 'client',
       body: {
         queries: queries,
-        id: uuid.v4()
-      }
-    });
+        id: uuid.v4(),
+        client: 'client'
+      },
+      msgid: uuid.v4(),
+      devlivered: false
+    };
+
+    io.sockets.in('clients').emit(msg.type, msg);
+
+    setTimeout(function() {
+      coordinator.emit('transaction', msg);
+      msg.delivered = true;
+      io.sockets.in('clients').emit(msg.type, msg);
+    }, config.commDelay);
+  });
+
+  socket.on('updatedelay', function(newdelay) {
+    config.commDelay = parseInt(newdelay, 10);
+    io.sockets.in('clients').emit('configupdate', config);
   });
 
   socket.on('send', function(msg) {
@@ -47,11 +63,17 @@ io.sockets.on("connection", function (socket) {
       msg.from = 'unknown';
     }
 
+    msg.msgid = uuid.v4();
+    msg.delivered = false;
+
+    io.sockets.in('clients').emit(msg.type, msg);
+
     setTimeout(function() {
+      msg.delivered = true;
       var room = msg.from === coordinatorId ? msg.to : msg.from;
       console.log("Sending to room", room, msg.type, JSON.stringify(msg));
       socket.broadcast.to(room).emit(msg.type, msg);
-    }, delay);
+    }, config.commDelay);
   });
 
   socket.on('getnodes', function() {
@@ -92,6 +114,7 @@ io.sockets.on("connection", function (socket) {
         socket.join(node.name);
       });
       socket.join(coordinatorId);
+      socket.join('clients');
     }
     else {
       console.log("Unknown socket identified as " + name + ".");

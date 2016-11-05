@@ -45,7 +45,7 @@ module.exports = function(fsm, config, files) {
       });
       return;
     }
-    var tail = new Tail(filepath, '\n');
+    var tail = new Tail(filepath, '\n', {interval: 500});
      
     tail.on('line', function(line) {
       io.sockets.emit('fileupdate', _.extend({

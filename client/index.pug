@@ -3,10 +3,10 @@ html
     title Client
     link(rel="stylesheet", href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css")
     style(type='text/css').
-      .log {
+      .log table {
         font-size:80%;
       }
-      .log td {
+      .log table td {
         white-space:nowrap;
       }
       body {
@@ -43,6 +43,19 @@ html
       .panel-body .table {
         table-layout:fixed;
       }
+
+      .log {
+        max-height:30%;
+        overflow:auto;
+      }
+
+      .delivering {
+        color:#ccc;
+      }
+
+      .delivered {
+        color:green;
+      }
   body
     .nav.navbar.top
       a.navbar-brand(href="#") 2-Phase-Commit Client
@@ -52,33 +65,49 @@ html
           .panel.panel-default
             .panel-heading
               h3.panel-title Client
-            .panel-body
-              textarea#query
-                | node0 ADD 100
-                | node1 SUBTRACT 100
-              button#execute Execute
+                br
+                small Your computer
+            .panel-body(style="min-width:300px;")
+              form#queryform
+                .form-group
+                  label(for='query') Query
+                  textarea#query.form-control(cols=100, rows=3)
+                    | node0 ADD 100
+                    | node1 SUBTRACT 100
+                button.btn.btn-default#execute Execute
+              br
+              form
+                .form-group
+                  label(id="delaylabel", for="delay")= 'Communication delay (' + config.commDelay + 'ms)'
+                  input(type="range", min="0", step="500", max="5000", value=config.commDelay, list='delaysettings', id="delay")
+                  datalist(id="delaysettings")
+                    option 0
+                    option 500
+                    option 1000
+                    option 1500
+                    option 2000
+                    option 2500
+                    option 3000
+                    option 3500
+                    option 4000
+                    option 4500
+                    option 5000
             .panel-footer
       .coordinators.col
       .comms.col
         .item
           .panel.panel-default
             .panel-heading
-              h3.panel-title Client
-            .panel-body
-              textarea#query
-                | node0 ADD 100
-                | node1 SUBTRACT 100
-              button#execute Execute
+              h3.panel-title Comm node0
+            .panel-body#coordinatornode0
+              
             .panel-footer
         .item
           .panel.panel-default
             .panel-heading
-              h3.panel-title Client
-            .panel-body
-              textarea#query
-                | node0 ADD 100
-                | node1 SUBTRACT 100
-              button#execute Execute
+              h3.panel-title Comm node1
+            .panel-body#coordinatornode1
+              
             .panel-footer
       .nodes.col
 
@@ -89,6 +118,8 @@ html
     script(src='/socket.io/socket.io.js')
     script(src='/js/NodeModel.js')
     script(src='/js/NodePanel.js')
+    script(src='/js/CommCollection.js')
+    script(src='/js/CommPanel.js')
     script.
       var socket = io();
       var config = !{JSON.stringify(config)};
@@ -119,18 +150,62 @@ html
       $('.coordinators').append(cPanel.$el);
 
 
+      var comms = {};
+      comms[getCommCollection('', 'client')] = new CommCollection();
+
+      _.each(config.nodes, function(node) {
+        comms[getCommCollection('', node.id)] = new CommCollection();
+      });
+
+      new CommPanel({
+        model: comms[getCommCollection('', 'node0')],
+        el: document.querySelector('#coordinatornode0')
+      });
+      new CommPanel({
+        model: comms[getCommCollection('', 'node1')],
+        el: document.querySelector('#coordinatornode1')
+      });
+
       socket.on('connect', function() {
         socket.emit('identify', 'client');
       });
 
-      socket.on('PREPARE',      function(data) { console.log(data); });
-      socket.on('YES VOTE',     function(data) { console.log(data); });
-      socket.on('NO VOTE',      function(data) { console.log(data); });
-      socket.on('ACK',      function(data) { console.log(data); });
-      socket.on('COMMIT',      function(data) { console.log(data); });
-      socket.on('ABORT',      function(data) { console.log(data); });
+      socket.on('configupdate', function(data) {
+        // console.log(data);
+      });
 
-      document.querySelector('#execute').addEventListener('click', function() {
+      function getCommCollection(partner1, partner2) {
+        var other = partner2 === config.coordinator.id ? partner1 : partner2;
+        return config.coordinator.id + '-' + other;
+      }
+
+      function routeMsgToComm(msg) {
+        comms[getCommCollection(msg.from, msg.to)].add(msg, {merge: true});
+      }
+
+      // client/coordinator comm
+      socket.on('transaction', routeMsgToComm);
+      socket.on('OK', routeMsgToComm);
+      socket.on('ERROR', routeMsgToComm);
+
+      // coordinator/node comm
+      socket.on('PREPARE', routeMsgToComm);
+      socket.on('YES VOTE', routeMsgToComm);
+      socket.on('NO VOTE', routeMsgToComm);
+      socket.on('ACK', routeMsgToComm);
+      socket.on('COMMIT', routeMsgToComm);
+      socket.on('ABORT', routeMsgToComm);
+
+      document.querySelector('#delay').addEventListener('change', function(e) {
+        socket.emit('updatedelay', this.value);
+      });
+
+      document.querySelector('#delay').addEventListener('input', function(e) {
+        document.querySelector('#delaylabel').innerHTML = 'Communication delay (' + this.value + 'ms)';
+      });
+
+      document.querySelector('#queryform').addEventListener('submit', function(e) {
+        e.preventDefault();
         socket.emit('query', parseQuery(document.querySelector('#query').value));
       });
 

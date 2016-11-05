@@ -26,7 +26,7 @@ var NodeModel = Backbone.Model.extend({
     var lines = this.get(update.id) || [];
     lines.push(update.line);
 
-    this.set(update.id, lines.slice(-2));
+    this.set(update.id, lines);
     this.trigger('change');
   }
 });

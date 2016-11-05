@@ -2,4 +2,4 @@
 *.db
 *.pcdb
 node_modules/
-push-production.sh
+push-production.sh*.sample.js
