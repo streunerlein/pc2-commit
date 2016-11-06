@@ -164,9 +164,11 @@ html
         .item
           .panel.panel-default
             .panel-heading
-              h3.panel-title Client
+              h3.panel-title Client (you)
                 br
-                small Your computer
+                small= client.host
+                br
+                small= client.geo.city + ", " + client.geo.country
             .panel-body
               form#queryform
                 .form-group#querygroup

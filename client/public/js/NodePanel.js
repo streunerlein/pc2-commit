@@ -13,7 +13,7 @@ var NodePanel = Backbone.View.extend({
       '<div class="panel-heading">' +
         '<h3 class="panel-title">' +
           '<div class="row">' +
-            '<div class="col-md-4">' + this.model.get('id') + '<br/><small>' + this.model.get('host')  + '<br/>' + this.model.get('geo') + '</small></div>' +
+            '<div class="col-md-4">' + this.model.get('id') + '<br/><small>' + this.model.get('host')  + '<br/>' + (this.model.get('geo').city + ', ' + this.model.get('geo').country) + '</small></div>' +
             '<div class="col-md-4">' + this.model.get('state') + '</div>' +
             (this.model.get('db') !== '' ? '<div class="col-md-4">DB: ' + this.model.get('db') + '</div>' : '') +
           '</div>' +

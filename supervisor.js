@@ -3,6 +3,7 @@
 var config = require('./config');
 var _ = require('underscore');
 
+var geo = require('geoip-lite');
 var app = require('express')();
 var http = require('http').Server(app);
 var client = require('./client');
@@ -22,8 +23,12 @@ var clients = {};
 var coordinatorId = config.coordinator.id;
 var nodesConfig = config.nodes;
 
-io.sockets.on("connection", function (socket) {
+config.coordinator.geo = geo.lookup(config.coordinator.host);
+_.each(config.nodes, function(node) {
+  node.geo = geo.lookup(node.host);
+});
 
+io.sockets.on("connection", function (socket) {
   socket.on('query', function(queries) {
     var msg = {
       type: 'transaction',
