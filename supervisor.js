@@ -71,8 +71,9 @@ io.sockets.on("connection", function (socket) {
     setTimeout(function() {
       msg.delivered = true;
       var room = msg.from === coordinatorId ? msg.to : msg.from;
-      console.log("Sending to room", room, msg.type, JSON.stringify(msg));
+
       socket.broadcast.to(room).emit(msg.type, msg);
+      io.sockets.in('clients').emit(msg.type, msg);
     }, config.commDelay);
   });
 
@@ -110,10 +111,6 @@ io.sockets.on("connection", function (socket) {
       console.log("Client socket identified as " + name + ".");
       clients[socket.id] = socket;
 
-      _.mapObject(nodes, function(node) {
-        socket.join(node.name);
-      });
-      socket.join(coordinatorId);
       socket.join('clients');
     }
     else {

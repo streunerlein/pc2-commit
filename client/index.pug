@@ -3,6 +3,10 @@ html
     title Client
     link(rel="stylesheet", href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css")
     style(type='text/css').
+      .commmessage .bg {
+        transition:all !{config.commDelay/1000}s linear;
+      }
+
       .log table {
         font-size:80%;
       }
@@ -24,6 +28,7 @@ html
       .col {
         display:flex;
         flex-flow:column;
+        flex-grow:1;
       }
       .col > div {
         flex-grow:1;
@@ -38,23 +43,118 @@ html
       .panel-body {
         flex: 2;
         overflow:auto;
+        min-width:400px;
       }
 
-      .panel-body .table {
-        table-layout:fixed;
+      .client .panel-body {
+        min-width:250px;
       }
 
-      .log {
-        max-height:30%;
+      .comms {
+        min-width:100px;
+        text-align:center;
+      }
+
+      .comms .item {
         overflow:auto;
+        position:relative;
       }
 
-      .delivering {
-        color:#ccc;
+      .comms .commmessage {
+        transition:all 0.3s linear;
+        transition-property: opacity, transform;
+        transform:translateX(50%);
+        opacity:0;
+        visibility:hidden;
+        top:50%;
+        position:absolute;
       }
 
-      .delivered {
-        color:green;
+      .comms .commmessage:nth-last-child(7) {
+        visibility:visible;
+        transform:translateY(-140px);
+        opacity:0;
+      }
+
+      .comms .commmessage:nth-last-child(6) {
+        visibility:visible;
+        transform:translateY(-120px);
+        opacity:0;
+      }
+
+      .comms .commmessage:nth-last-child(5) {
+        visibility:visible;
+        transform:translateY(-80px);
+        opacity:0.2;
+      }
+
+      .comms .commmessage:nth-last-child(4) {
+        visibility:visible;
+        transform:translateY(-60px);
+        opacity:0.4;
+      }
+
+      .comms .commmessage:nth-last-child(3) {
+        visibility:visible;
+        transform:translateY(-40px);
+        opacity:0.6;
+      }
+
+      .comms .commmessage:nth-last-child(2) {
+        visibility:visible;
+        transform:translateY(-20px);
+        opacity:0.8;
+      }
+
+      .comms .commmessage:nth-last-child(1) {
+        transform:translateY(-0px);
+        opacity:1;
+      }
+
+      .comms .commmessage.delivering:nth-last-child(1) {
+        visibility:visible;
+      }
+
+      .commmessage .label {
+        display:block;
+        margin:5px 0;
+        position:relative;
+        overflow:hidden
+      }
+
+      .commmessage span {
+        position:relative;
+      }
+
+      .commmessage .bg {
+        position:absolute;
+        background-color:gray;
+        left:0;
+        right:0;
+        top:0;
+        bottom:0;
+      }
+
+      .commmessage.toleft {
+        right:0;
+      }
+      .commmessage.toright {
+        left:0;
+      }
+
+      .commmessage.delivering.toleft .bg {
+        right:100%;
+      }
+
+      .commmessage.delivering.toright .bg {
+        left:100%;
+      }
+
+      .commmessage.toleft .right {
+        display:none;
+      }
+      .commmessage.toright .left {
+        display:none;
       }
   body
     .nav.navbar.top
@@ -67,10 +167,12 @@ html
               h3.panel-title Client
                 br
                 small Your computer
-            .panel-body(style="min-width:300px;")
+            .panel-body
               form#queryform
-                .form-group
-                  label(for='query') Query
+                .form-group#querygroup
+                  label(for='query')
+                    = "Transaction "
+                    span.glyphicon.glyphicon-question-sign(data-toggle="popover", data-trigger="hover", title="Simple query language", data-content="<p><strong>GET</strong><br/>Gets the current value.<br/><code>node GET</code></p><p><strong>SET</strong><br/>Sets the database to value.<br/><code>node SET value</code></p><p><strong>ADD</strong><br />Adds value to database.<br/><code>node ADD value</code></p><p><strong>SUBTRACT</strong><br/>Subtracts value from database.<br/><code>node SUBTRACT value</code></p><hr/><dl><dt><strong>node</strong></dt><dd>One of <em>" + (Object.keys(config.nodes)) + "</em>.</dd><dt><strong>value</strong></dt><dd>Positive or negative integer.</dd></dl></p>", data-html="true")
                   textarea#query.form-control(cols=100, rows=3)
                     | node0 ADD 100
                     | node1 SUBTRACT 100
@@ -79,7 +181,7 @@ html
               form
                 .form-group
                   label(id="delaylabel", for="delay")= 'Communication delay (' + config.commDelay + 'ms)'
-                  input(type="range", min="0", step="500", max="5000", value=config.commDelay, list='delaysettings', id="delay")
+                  input(type="range", min="0", step="500", max="10000", value=config.commDelay, list='delaysettings', id="delay")
                   datalist(id="delaysettings")
                     option 0
                     option 500
@@ -92,23 +194,23 @@ html
                     option 4000
                     option 4500
                     option 5000
+                    option 5500
+                    option 6000
+                    option 6500
+                    option 7000
+                    option 7500
+                    option 8000
+                    option 8500
+                    option 9000
+                    option 9500
+                    option 10000
             .panel-footer
+      .comms.col
+        .item#coordinatorclient
       .coordinators.col
       .comms.col
-        .item
-          .panel.panel-default
-            .panel-heading
-              h3.panel-title Comm node0
-            .panel-body#coordinatornode0
-              
-            .panel-footer
-        .item
-          .panel.panel-default
-            .panel-heading
-              h3.panel-title Comm node1
-            .panel-body#coordinatornode1
-              
-            .panel-footer
+        .item#coordinatornode0
+        .item#coordinatornode1
       .nodes.col
 
     script(src='http://underscorejs.org/underscore-min.js')
@@ -121,6 +223,10 @@ html
     script(src='/js/CommCollection.js')
     script(src='/js/CommPanel.js')
     script.
+      $(function () {
+        $('[data-toggle="popover"]').popover()
+      });
+
       var socket = io();
       var config = !{JSON.stringify(config)};
 
@@ -159,19 +265,22 @@ html
 
       new CommPanel({
         model: comms[getCommCollection('', 'node0')],
-        el: document.querySelector('#coordinatornode0')
+        el: document.querySelector('#coordinatornode0'),
+        left: config.coordinator.id
       });
       new CommPanel({
         model: comms[getCommCollection('', 'node1')],
-        el: document.querySelector('#coordinatornode1')
+        el: document.querySelector('#coordinatornode1'),
+        left: config.coordinator.id
+      });
+      new CommPanel({
+        model: comms[getCommCollection('', 'client')],
+        el: document.querySelector('#coordinatorclient'),
+        left: 'client'
       });
 
       socket.on('connect', function() {
         socket.emit('identify', 'client');
-      });
-
-      socket.on('configupdate', function(data) {
-        // console.log(data);
       });
 
       function getCommCollection(partner1, partner2) {
@@ -196,6 +305,12 @@ html
       socket.on('COMMIT', routeMsgToComm);
       socket.on('ABORT', routeMsgToComm);
 
+      socket.on('configupdate', function(data) {
+        var sheet = document.styleSheets[document.styleSheets.length -1];
+        var rules = sheet.cssRules || sheet.rules;
+        rules[0].style.transition = 'all ' + (data.commDelay/1000) + 's linear';
+      });
+
       document.querySelector('#delay').addEventListener('change', function(e) {
         socket.emit('updatedelay', this.value);
       });
@@ -204,9 +319,26 @@ html
         document.querySelector('#delaylabel').innerHTML = 'Communication delay (' + this.value + 'ms)';
       });
 
+      document.querySelector('#query').addEventListener('keyup', function() {
+        try {
+          parseQuery(document.querySelector('#query').value);
+          document.querySelector('#querygroup').classList.remove('has-error');
+          document.querySelector('#querygroup').classList.add('has-success');
+        }
+        catch (err) {
+          document.querySelector('#querygroup').classList.remove('has-success');
+          document.querySelector('#querygroup').classList.add('has-error');
+        }
+      });
+
       document.querySelector('#queryform').addEventListener('submit', function(e) {
         e.preventDefault();
-        socket.emit('query', parseQuery(document.querySelector('#query').value));
+        try {
+          socket.emit('query', parseQuery(document.querySelector('#query').value));
+        }
+        catch (err) {
+          alert('Your query contains errors.')
+        }
       });
 
       function parseQuery(queryStr) {

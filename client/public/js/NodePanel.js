@@ -9,7 +9,6 @@ var NodePanel = Backbone.View.extend({
   },
 
   render: function() {
-    var scrollBefore = $(".log", this.$el).prop("scrollTop");
     this.$el.html('<div class="panel panel-default">' +
       '<div class="panel-heading">' +
         '<h3 class="panel-title">' +
@@ -29,15 +28,12 @@ var NodePanel = Backbone.View.extend({
               return '<tr>' + _.map([ix, parts[0], parts[4]], function(part) {
                 return '<td>' + part + '</td>';
               }).join('') + '</tr>';
-            }).join('')) +
+            }).reverse().join('')) +
           '</table>' +
         '</div>' +
       '</div>' +
       '<div class="panel-footer">' +
       '</div>' +
     '</div>');
-    var $table = $(".log", this.$el);
-    $table.scrollTop(scrollBefore);
-    $table.animate({scrollTop: $table.prop("scrollHeight")});
   }
 });
