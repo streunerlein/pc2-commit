@@ -78,6 +78,10 @@ describe('Node', function() {
     it('should be in prepared state after sending a yes vote', function() {
       expect(node.state).to.equal('STATE_PREPARED');
     });
+
+    it('should send a yes vote', function() {
+      expect(_.last(comm.getMessagesSent('coordinator'))[0]).to.equal('YES VOTE');
+    });
   });
 
   describe('on receiving a prepare message', function() {
@@ -98,6 +102,37 @@ describe('Node', function() {
     it('should force write a prepare log record', function() {
       var logLine = node.logger.getLogsSync(1)[0];
       expect(logLine.type).to.equal('prepare');
+    });
+  });
+
+  describe('on database failure', function() {
+    var dbBefore = null;
+
+    beforeEach(function() {
+      dbBefore = node.db.executeQuery([nodename, 'GET']);
+
+      node.db.lock(nodename);
+
+      comm.get('coordinator').simulateMessage('PREPARE', transaction);
+    });
+
+    it('should answer with a no vote', function() {
+      expect(_.last(comm.getMessagesSent('coordinator'))[0]).to.equal('NO VOTE');
+    });
+
+    it('should not change database', function() {
+      node.db.unlock(nodename);
+      var dbAfter = node.db.executeQuery([nodename, 'GET']);
+
+      expect(dbAfter).to.equal(dbBefore);
+    });
+
+    it('should be in state ready', function() {
+      expect(node.state).to.equal('STATE_READY');
+    });
+
+    afterEach(function() {
+      node.db.unlock(nodename);
     });
   });
 

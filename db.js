@@ -8,6 +8,23 @@ var DB = function(opts) {
     path: './',
   }, opts || {});
 
+  var dblocks = [];
+
+  this.lock = function(dbname) {
+    dblocks.push(dbname);
+  };
+
+  this.unlock = function(dbname) {
+    var pos = dblocks.indexOf(dbname);
+    if (pos !== -1) {
+      dblocks.splice(pos, 1);
+    }
+  };
+
+  this.islocked = function(dbname) {
+    return dblocks.indexOf(dbname) !== -1;
+  };
+
   this.getDbFileName = function(dbname) {
     return dbname + '.pcdb';
   };
@@ -19,7 +36,11 @@ var DB = function(opts) {
   this.executeQuery = function(query) {
     var db = query[0];
     var action = query[1].toUpperCase();
-    var delta = query[2] || null;
+    var delta = query[2] || 0;
+
+    if (this.islocked(db)) {
+      throw 'locked';
+    }
 
     var currentValue = this.readDb(db);
 
