@@ -25,7 +25,7 @@ var nodesConfig = config.nodes;
 
 config.coordinator.geo = geo.lookup(config.coordinator.host);
 _.each(config.nodes, function(node) {
-  node.geo = geo.lookup(node.host);
+  node.geo = geo.lookup(node.host) || node.geo || {};
 });
 
 io.sockets.on("connection", function (socket) {
