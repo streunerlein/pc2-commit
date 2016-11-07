@@ -6,5 +6,5 @@ node1="45.55.65.163"
 
 for address in $coordinator $node0 $node1
 do
-  ssh -i ~/.ssh/id_metanet root@$address "cd ~/pc2-commit && rm -f *.log && git pull && npm install && pm2 restart all"
+  ssh -i ~/.ssh/id_metanet root@$address "cd ~/pc2-commit && rm -f *.log && git pull && cp config.do.sample.js config.js && npm install && pm2 restart all"
 done
