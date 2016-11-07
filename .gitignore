@@ -3,3 +3,4 @@
 *.pcdb
 node_modules/
 push-production.sh*.sample.js
+config.js
