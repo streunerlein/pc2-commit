@@ -76,6 +76,32 @@ describe('Node', function() {
     });
   });
 
+  describe('on receiving a prepare message', function() {
+    var dbBefore = null;
+
+    beforeEach(function() {
+      dbBefore = node.db.executeQuery([nodename, 'GET']);
+
+      comm.get('coordinator').simulateMessage('PREPARE', transaction);
+    });
+
+    it('db contents changed', function() {
+      var dbAfter = node.db.executeQuery([nodename, 'GET']);
+
+      expect(dbAfter).to.equal(dbBefore + 100);
+    });
+
+    it('should force write a undo log record', function() {
+      var logLine = node.undologger.getLogsSync(1)[0];
+      expect(logLine.type).to.equal('undo');
+    });
+
+    it('undo log record should be reversed queries', function() {
+      var logLine = node.undologger.getLogsSync(1)[0];
+      expect(logLine.data).to.deep.equal([[nodename, 'SUBTRACT', 100]]);
+    });
+  });
+
   describe('on receiving a commit message', function() {
     var dbBefore = null;
 
