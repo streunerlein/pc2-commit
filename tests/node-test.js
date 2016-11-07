@@ -12,6 +12,7 @@ var fs = require('fs');
 var db = require('./../db');
 
 var nodename = 'node-test';
+var testRetryTimeout = 30;
 
 var comm = require('./mocks/comm-mock')(nodename);
 
@@ -35,7 +36,10 @@ describe('Node', function() {
       comm,
       testLogger,
       nodename,
-      new db()
+      new db(),
+      {
+        retryTimeout: testRetryTimeout
+      }
     );
 
     node.ready();
@@ -91,14 +95,9 @@ describe('Node', function() {
       expect(dbAfter).to.equal(dbBefore + 100);
     });
 
-    it('should force write a undo log record', function() {
-      var logLine = node.undologger.getLogsSync(1)[0];
-      expect(logLine.type).to.equal('undo');
-    });
-
-    it('undo log record should be reversed queries', function() {
-      var logLine = node.undologger.getLogsSync(1)[0];
-      expect(logLine.data).to.deep.equal([[nodename, 'SUBTRACT', 100]]);
+    it('should force write a prepare log record', function() {
+      var logLine = node.logger.getLogsSync(1)[0];
+      expect(logLine.type).to.equal('prepare');
     });
   });
 
@@ -159,6 +158,80 @@ describe('Node', function() {
       var dbAfter = node.db.executeQuery([nodename, 'GET']);
 
       expect(dbAfter).to.equal(dbBefore);
+    });
+  });
+
+  describe('on recovering from a prepared state', function() {
+    var dbBefore = null;
+
+    beforeEach(function() {
+      dbBefore = node.db.executeQuery([nodename, 'GET']);
+      comm.get('coordinator').simulateMessage('PREPARE', transaction);
+
+      // restart node fsm
+      node.transition('STATE_INIT');
+      node.ready();
+    });
+
+    it('should keep sending a yes vote to coordinator', function(done) {
+      expect(_.last(comm.getMessagesSent('coordinator'))[0]).to.equal('YES VOTE');
+
+      setTimeout(function() {
+        var lastTwoMessages = _.last(comm.getMessagesSent('coordinator'), 2);
+        expect(lastTwoMessages[0][0]).to.equal('YES VOTE');
+        expect(lastTwoMessages[1][0]).to.equal('YES VOTE');
+        done();
+      }, testRetryTimeout + 16);
+    });
+
+    describe('when receiving a commit decision', function(done) {
+      beforeEach(function() {
+        comm.get('coordinator').simulateMessage('COMMIT', transaction);
+      });
+
+      it('should force write a commit record', function() {
+        var logLine = node.logger.getLogsSync(1)[0];
+        expect(logLine.type).to.equal('commit');
+      });
+
+      it('should send an ACK to the coordinator', function() {
+        expect(_.last(comm.getMessagesSent('coordinator'))[0]).to.equal('ACK');
+      });
+
+      it('should be in state ready after committing', function() {
+        expect(node.state).to.equal('STATE_READY');
+      });
+
+      it('db contents changed', function() {
+        var dbAfter = node.db.executeQuery([nodename, 'GET']);
+
+        expect(dbAfter).to.equal(dbBefore + 100);
+      });
+    });
+
+    describe('when receiving an abort decision', function(done) {
+      beforeEach(function() {
+        comm.get('coordinator').simulateMessage('ABORT');
+      });
+
+      it('should force write a abort record', function() {
+        var logLine = node.logger.getLogsSync(1)[0];
+        expect(logLine.type).to.equal('abort');
+      });
+
+      it('should send an ACK to the coordinator', function() {
+        expect(_.last(comm.getMessagesSent('coordinator'))[0]).to.equal('ACK');
+      });
+
+      it('should be in state ready after committing', function() {
+        expect(node.state).to.equal('STATE_READY');
+      });
+
+      it('db contents unchanged', function() {
+        var dbAfter = node.db.executeQuery([nodename, 'GET']);
+
+        expect(dbAfter).to.equal(dbBefore);
+      });
     });
   });
 });

@@ -32,8 +32,9 @@ var node = machina.Fsm.extend({
         if (lastEntry && lastEntry.type === 'prepare') {
           this.transaction = {
             id: lastEntry.transaction,
-            queries: lastEntry.data,
-            lastState: lastEntry.type
+            queries: lastEntry.data.queries,
+            savepoint: lastEntry.data.savepoint,
+            lastState: lastEntry.type,
           };
 
           this.transition('STATE_RECOVERY');
@@ -81,8 +82,17 @@ var node = machina.Fsm.extend({
       prepareReceived: function(transaction) {
         this.transaction = transaction;
 
-        this.logger.prepare(transaction.id, transaction.queries, {force: true});
+        try {
+          this.transaction.savepoint = this.db.executeQuery([this.name, 'GET']);
+          _.each(this.transaction.queries, this.db.executeQuery.bind(this.db));
+        }
+        catch (e) {
+          this.comm.get('coordinator').send('NO VOTE');
+          this.transition('STATE_READY');
+          return;
+        }
 
+        this.logger.prepare(transaction.id, {queries: transaction.queries, savepoint: transaction.savepoint}, {force: true});
         this.comm.get('coordinator').send('YES VOTE');
 
         this.transition('STATE_PREPARED');
@@ -112,8 +122,6 @@ var node = machina.Fsm.extend({
         this.logger.commit(this.transaction.id, this.name, {force: true});
         this.comm.get('coordinator').send('ACK');
 
-        _.each(this.transaction.queries, this.db.executeQuery.bind(this.db));
-
         this.handle('ready');
       },
       ready: function() {
@@ -128,6 +136,10 @@ var node = machina.Fsm.extend({
         this.logger.abort(this.transaction.id, this.name, {force: true});
         this.comm.get('coordinator').send('ACK');
 
+        this.handle('rollback');
+      },
+      rollback: function() {
+        this.db.executeQuery([this.name, 'SET', this.transaction.savepoint]);
         this.handle('ready');
       },
       ready: function() {
