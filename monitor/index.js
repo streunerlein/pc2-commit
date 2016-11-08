@@ -32,13 +32,13 @@ module.exports = function(fsm, config, files, db) {
       });
 
       socket.on('lock', function() {
-        db.lock(config.id);
-        socket.emit('lockstate', db.islocked(config.id));
+        db.lock(fsm.name);
+        socket.emit('lockstate', db.islocked(fsm.name));
       });
 
       socket.on('unlock', function() {
-        db.unlock(config.id);
-        socket.emit('lockstate', db.islocked(config.id));
+        db.unlock(fsm.name);
+        socket.emit('lockstate', db.islocked(fsm.name));
       });
     }
   });
