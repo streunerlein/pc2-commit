@@ -46,7 +46,7 @@ var NodePanel = Backbone.View.extend({
                     '    <span class="' + (this.model.get('lockstate') || !this.model.get('online') ? 'text-danger' : 'text-success') + ' caret"></span>' +
                     '  </button>' +
                     '  <ul class="dropdown-menu">' +
-                    '    <li>' + (this.model.get('lockstate') ? '<a class="unlock" href="#">Unock database</a>' : ' <a class="lock" href="#">Lock database</a>') + '</li>' +
+                    '    <li>' + (this.model.get('lockstate') ? '<a class="unlock" href="#">Unlock database</a>' : ' <a class="lock" href="#">Lock database</a>') + '</li>' +
                     '  </ul>' +
                     '</div>' : '') +
                 (this.model.get('online') ?
