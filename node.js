@@ -78,6 +78,9 @@ var node = machina.Fsm.extend({
         this.comm.get('coordinator').on('PREPARE', function(transaction) {
           this.handle('prepareReceived', transaction);
         }.bind(this));
+        this.comm.get('coordinator').on('ABORT', function() {
+          this.handle('abort');
+        }.bind(this));
       },
       prepareReceived: function(transaction) {
         this.transaction = transaction;
@@ -97,8 +100,13 @@ var node = machina.Fsm.extend({
 
         this.transition('STATE_PREPARED');
       },
+      abort: function() {
+        this.logger.abort('unknown', this.name, {force: true});
+        this.comm.get('coordinator').send('ACK');
+      },
       _onExit: function() {
         this.comm.get('coordinator').off('PREPARE');
+        this.comm.get('coordinator').off('ABORT');
       }
     },
     STATE_PREPARED: {

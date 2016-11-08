@@ -69,7 +69,7 @@ var coordinator = machina.Fsm.extend({
           comm.get(nodeName).send(recoveryMessage, {});
 
           comm.get(nodeName).off('ACK');
-          comm.get(nodeName).on('ACK', function(node) { coordinator.handle('ack', node); });
+          comm.get(nodeName).on('ACK', function() { coordinator.handle('ack', nodeName); });
         });
       },
       ack: function(node) {

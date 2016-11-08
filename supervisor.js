@@ -76,7 +76,7 @@ io.sockets.on("connection", function (socket) {
     setTimeout(function() {
       msg.delivered = true;
       var room = msg.from === coordinatorId ? msg.to : msg.from;
-
+      console.log(msg);
       socket.broadcast.to(room).emit(msg.type, msg);
       io.sockets.in('clients').emit(msg.type, msg);
     }, config.commDelay);
