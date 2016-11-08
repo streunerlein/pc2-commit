@@ -23,7 +23,7 @@ var clients = {};
 var coordinatorId = config.coordinator.id;
 var nodesConfig = config.nodes;
 
-config.coordinator.geo = geo.lookup(config.coordinator.host);
+config.coordinator.geo = geo.lookup(config.coordinator.host) || config.coordinator.geo || {};
 _.each(config.nodes, function(node) {
   node.geo = geo.lookup(node.host) || node.geo || {};
 });
