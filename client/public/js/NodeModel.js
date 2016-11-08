@@ -19,6 +19,7 @@ var NodeModel = Backbone.Model.extend({
     this.socket.on('state', function(s) { model.setState(s); });
     this.socket.on('fileupdate', function(s) { model.addLine(s); });
     this.socket.on('dbupdate', function(s) { model.set('db', s); });
+    this.socket.on('lockstate', function(s) { model.set('lockstate', s); });
 
     this.set('log', []);
     this.set('db', '');

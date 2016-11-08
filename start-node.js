@@ -20,6 +20,6 @@ var node = new nodeFsm(comm, log, nodeconfig.id, nodeDb);
 monitor(node, nodeconfig.debug, {
   log: log.getFilePath(),
   db: nodeDb.getFilePath(nodeconfig.id)
-});
+}, nodeDb);
 
 node.ready();

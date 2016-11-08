@@ -8,6 +8,29 @@ var NodePanel = Backbone.View.extend({
     this.model.on('change', this.render, this);
   },
 
+  events: {
+    'click .stop': 'stopNode',
+    'click .start': 'startNode',
+    'click .lock': 'lockNode',
+    'click .unlock': 'unlockNode'
+  },
+
+  stopNode: function() {
+    this.trigger('stopNode');
+  },
+
+  startNode: function() {
+    this.trigger('startNode');
+  },
+
+  lockNode: function() {
+    this.trigger('lockNode');
+  },
+
+  unlockNode: function() {
+    this.trigger('unlockNode');
+  },
+
   render: function() {
     this.$el.html('<div class="panel panel-default">' +
       '<div class="panel-heading">' +
@@ -19,16 +42,20 @@ var NodePanel = Backbone.View.extend({
                 (this.model.get('db') !== '' ? '' +
                     '<div class="btn-group" role="group">' +
                     '  <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' +
-                    '    <span class="glyphicon glyphicon-hdd" aria-hidden="true"></span> ' + this.model.get('db') +
-                    '    <span class="caret"></span>' +
+                    '    <span class="' + (this.model.get('lockstate') || !this.model.get('online') ? 'text-danger' : 'text-success') + ' glyphicon glyphicon-hdd" aria-hidden="true"></span> <span class="' + (this.model.get('lockstate') || !this.model.get('online') ? 'text-danger' : 'text-success') + '">' + this.model.get('db') + '</span>' +
+                    '    <span class="' + (this.model.get('lockstate') || !this.model.get('online') ? 'text-danger' : 'text-success') + ' caret"></span>' +
                     '  </button>' +
                     '  <ul class="dropdown-menu">' +
-                    '    <li><a href="#">Lock database</a></li>' +
+                    '    <li>' + (this.model.get('lockstate') ? '<a class="unlock" href="#">Unock database</a>' : ' <a class="lock" href="#">Lock database</a>') + '</li>' +
                     '  </ul>' +
                     '</div>' : '') +
-                '<button class="btn btn-sm btn-default">' +
-                  '<span class="glyphicon glyphicon-stop" aria-hidden="true"></span> Stop' +
-                '</button>' +
+                (this.model.get('online') ?
+                  '<button class="stop btn btn-sm btn-default">' +
+                    '<span class="glyphicon glyphicon-stop" aria-hidden="true"></span> Stop' +
+                  '</button>' :
+                  '<button class="start btn btn-sm btn-default">' +
+                    '<span class="glyphicon glyphicon-play" aria-hidden="true"></span> Start' +
+                  '</button>') +
               '</div></div>' +
           '</div>' +
         '</h3>' +

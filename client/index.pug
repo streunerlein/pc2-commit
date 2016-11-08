@@ -239,6 +239,19 @@ html
 
         node.model = model;
 
+        panel.on('stopNode', function() {
+          $.ajax('//' + node.host + ':8080/stop-node/' + node.id);
+        });
+        panel.on('startNode', function() {
+          $.ajax('//' + node.host + ':8080/start-node/' + node.id);
+        });
+        panel.on('lockNode', function() {
+          model.socket.emit('lock');
+        });
+        panel.on('unlockNode', function() {
+          model.socket.emit('unlock');
+        });
+
         panel.render();
         $('.nodes').append(panel.$el);
       });
@@ -248,6 +261,12 @@ html
         el: $('<div class="item"></div>'),
         model: coordinator,
         className: 'coordinator'
+      });
+      cPanel.on('stopNode', function() {
+        $.ajax('//' + config.coordinator.host + ':8080/stop-node/' + config.coordinator.id);
+      });
+      cPanel.on('startNode', function() {
+        $.ajax('//' + config.coordinator.host + ':8080/start-node/' + config.coordinator.id);
       });
 
       config.coordinator.model = coordinator;

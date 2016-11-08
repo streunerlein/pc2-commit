@@ -12,7 +12,7 @@ app.get('/', function(req, res){
   res.sendFile(__dirname + '/index.html');
 });
 
-module.exports = function(fsm, config, files) {
+module.exports = function(fsm, config, files, db) {
   var port = config.port;
   files = files || {};
 
@@ -28,6 +28,17 @@ module.exports = function(fsm, config, files) {
     if ('db' in files) {
       fs.readFile(files['db'], {encoding: 'utf8'}, function(err, content) {
         io.sockets.emit('dbupdate', content);
+        io.sockets.emit('lockstate', db.islocked(config.id));
+      });
+
+      socket.on('lock', function() {
+        db.lock(config.id);
+        socket.emit('lockstate', db.islocked(config.id));
+      });
+
+      socket.on('unlock', function() {
+        db.unlock(config.id);
+        socket.emit('lockstate', db.islocked(config.id));
       });
     }
   });
