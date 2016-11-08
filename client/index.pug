@@ -165,10 +165,6 @@ html
           .panel.panel-default
             .panel-heading
               h3.panel-title Client (you)
-                br
-                small= client.host
-                br
-                small= client.geo.city + ", " + client.geo.country
             .panel-body
               form#queryform
                 .form-group#querygroup
@@ -207,6 +203,8 @@ html
                     option 9500
                     option 10000
             .panel-footer
+              small= client.host
+              small.pull-right= client.geo.city + ", " + client.geo.country
       .comms.col
         .item#coordinatorclient
       .coordinators.col

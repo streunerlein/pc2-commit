@@ -9,6 +9,12 @@ var NodeModel = Backbone.Model.extend({
     var model = this;
     this.socket = io.connect('http://' + this.get('host') + ':' + this.get('debug').port);
 
+    this.socket.on('connect', function() {
+      model.set('online', true);
+    });
+    this.socket.on('disconnect', function() {
+      model.set('online', false);
+    });
     this.socket.on('transition', function(s) { model.setState(s); });
     this.socket.on('state', function(s) { model.setState(s); });
     this.socket.on('fileupdate', function(s) { model.addLine(s); });

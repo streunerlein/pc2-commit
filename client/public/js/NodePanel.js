@@ -13,9 +13,23 @@ var NodePanel = Backbone.View.extend({
       '<div class="panel-heading">' +
         '<h3 class="panel-title">' +
           '<div class="row">' +
-            '<div class="col-md-4">' + this.model.get('id') + '<br/><small>' + this.model.get('host')  + '<br/>' + (this.model.get('geo').city + ', ' + this.model.get('geo').country) + '</small></div>' +
-            '<div class="col-md-4">' + this.model.get('state') + '</div>' +
-            (this.model.get('db') !== '' ? '<div class="col-md-4">DB: ' + this.model.get('db') + '</div>' : '') +
+            '<div class="col-md-6' + (this.model.get('online') ? ' text-success' : ' text-danger') + '"><small>' + this.model.get('id') + '</small><br/>' + this.model.get('state') + '</div>' +
+            '<div class="col-md-6">' +
+              '<div class="btn-group pull-right">' +
+                (this.model.get('db') !== '' ? '' +
+                    '<div class="btn-group" role="group">' +
+                    '  <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' +
+                    '    <span class="glyphicon glyphicon-hdd" aria-hidden="true"></span> ' + this.model.get('db') +
+                    '    <span class="caret"></span>' +
+                    '  </button>' +
+                    '  <ul class="dropdown-menu">' +
+                    '    <li><a href="#">Lock database</a></li>' +
+                    '  </ul>' +
+                    '</div>' : '') +
+                '<button class="btn btn-sm btn-default">' +
+                  '<span class="glyphicon glyphicon-stop" aria-hidden="true"></span> Stop' +
+                '</button>' +
+              '</div></div>' +
           '</div>' +
         '</h3>' +
       '</div>' +
@@ -33,6 +47,8 @@ var NodePanel = Backbone.View.extend({
         '</div>' +
       '</div>' +
       '<div class="panel-footer">' +
+        '<small>' + this.model.get('host') + '</small>' +
+        '<small class="pull-right">' + (this.model.get('geo').city + ', ' + this.model.get('geo').country) + '</small>' +
       '</div>' +
     '</div>');
   }
