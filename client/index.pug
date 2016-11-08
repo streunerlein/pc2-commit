@@ -263,10 +263,10 @@ html
         className: 'coordinator'
       });
       cPanel.on('stopNode', function() {
-        $.ajax('//' + config.coordinator.host + ':8080/stop-coordinator/' + config.coordinator.id);
+        $.ajax('//' + config.coordinator.host + ':8080/stop-coordinator');
       });
       cPanel.on('startNode', function() {
-        $.ajax('//' + config.coordinator.host + ':8080/start-coordinator/' + config.coordinator.id);
+        $.ajax('//' + config.coordinator.host + ':8080/start-coordinator');
       });
 
       config.coordinator.model = coordinator;
