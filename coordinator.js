@@ -229,6 +229,10 @@ var coordinator = machina.Fsm.extend({
         _.each(this.ackingNodes, function(nodeName) {
           comm.get(nodeName).on('ACK', function() { console.log('Ack from', nodeName); coordinator.handle('ack', nodeName); });
         });
+
+        if (!this.ackingNodes.length) {
+          this.handle('allAck');
+        }
       },
       ack: function(node) {
         console.log('Ack', node);
